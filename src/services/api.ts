@@ -79,10 +79,10 @@ export async function uploadImage(file: File, path = "images"): Promise<string> 
 	return new Promise((resolve, reject) => {
 		uploadTask.on(
 			"state_changed",
-			(snapshot) => {
-				// optional: progress monitoring
-				// const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
-			},
+			// (snapshot) => {
+			// optional: progress monitoring
+			// const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+			// },
 			(error) => reject(error),
 			async () => {
 				const url = await getDownloadURL(uploadTask.snapshot.ref);

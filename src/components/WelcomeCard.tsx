@@ -1,6 +1,9 @@
 import { Card, CardContent, Typography, Box } from "@mui/material";
+import { useTheme } from "@mui/material/styles";
 
 export default function WelcomeCard() {
+	const muiTheme = useTheme();
+
 	return (
 		<Card
 			sx={{
@@ -9,7 +12,9 @@ export default function WelcomeCard() {
 					theme.palette.mode === "dark"
 						? theme.palette.background.paper
 						: "#f0f4f8",
-				borderLeft: `6px solid ${theme => theme.palette.primary.main}`,
+
+				borderRadius: muiTheme.shape.borderRadius,
+				// borderLeft: `6px solid ${theme => theme.palette.primary.main}`,
 				boxShadow: 3,
 			}}
 		>
