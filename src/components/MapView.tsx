@@ -21,7 +21,11 @@ function getMapBoxThmeUrl(lightmode: boolean) {
 		: "mapbox://styles/mapbox/streets-v11";
 }
 
-export default function MapView() {
+interface MapViewProps {
+	setReport: (report: Report | null) => void;
+}
+
+export default function MapView({ setReport }: MapViewProps) {
 	const mapRef = useRef<mapboxgl.Map | null>(null);
 	const containerRef = useRef<HTMLDivElement>(null);
 	const { mode } = useContext(ThemeContext);
@@ -32,10 +36,16 @@ export default function MapView() {
 
 		reports.forEach((report) => {
 			const popup = new mapboxgl.Popup({ offset: 25 }).setHTML(
-				`<h3>${report.type}</h3>
-				<p>${report.description || ""}</p>
-				${report.imageUrl ? `<img src="${report.imageUrl}" alt="${report.type}" style="width:100%;height:auto;"/>` : ""}`
+				`<h3>${report.type}</h3><p>${report.description || ""}</p>`
 			);
+
+			popup.on('open', () => {
+				setReport(report);
+			});
+
+			popup.on('close', () => {
+				setReport(null);
+			});
 
 			new mapboxgl.Marker({ color: "red" })
 				.setLngLat([report.lng, report.lat])

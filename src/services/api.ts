@@ -48,7 +48,7 @@ export interface Report {
 	lat: number;
 	lng: number;
 	imageUrl?: string;
-	createdAt?: Date;
+	createdAt?: string;
 }
 
 // Create a report

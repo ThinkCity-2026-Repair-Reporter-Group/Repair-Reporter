@@ -4,43 +4,49 @@ import { Box, Button, Typography } from '@mui/material';
 
 mapboxgl.accessToken = import.meta.env.VITE_MAPBOX_TOKEN;
 
-const MapPicker = () => {
+
+
+interface MapPickerProps {
+	setLatLng: (latLng: { lat: number; lng: number } | null) => void;
+}
+
+
+export default function MapPickerProps({ setLatLng }: MapPickerProps) {
 	const mapContainer = useRef<HTMLDivElement | null>(null);
 	const map = useRef<mapboxgl.Map | null>(null);
 	const [lngLat, setLngLat] = useState<{ lng: number; lat: number } | null>(null);
-	const [marker, setMarker] = useState<mapboxgl.Marker | null>(null);
+	const markerRef = useRef<mapboxgl.Marker | null>(null);
 
 	useEffect(() => {
-		if (map.current) return; // initialize map only once
+		if (map.current) return;
 
 		map.current = new mapboxgl.Map({
 			container: mapContainer.current!,
 			style: 'mapbox://styles/mapbox/streets-v12',
-			center: [-122.4194, 37.7749], // default center (San Francisco)
+			center: [-122.4194, 37.7749],
 			zoom: 10,
 		});
 
-		// Add click event to pick coordinates
 		map.current.on('click', (e) => {
 			const { lng, lat } = e.lngLat;
 
 			setLngLat({ lng, lat });
 
-			// Add or move marker
-			if (marker) {
-				marker.setLngLat([lng, lat]);
+			if (markerRef.current) {
+				markerRef.current.setLngLat([lng, lat]);
 			} else {
-				const newMarker = new mapboxgl.Marker().setLngLat([lng, lat]).addTo(map.current!);
-				setMarker(newMarker);
+				markerRef.current = new mapboxgl.Marker()
+					.setLngLat([lng, lat])
+					.addTo(map.current!);
 			}
 		});
-	}, [marker]);
+	}, []);
 
 	return (
 		<Box>
 			<Box
 				ref={mapContainer}
-				sx={{ height: 400, width: '100%', borderRadius: 2, overflow: 'hidden' }}
+				sx={{ height: '70vh', minHeight: 400, width: '100%', borderRadius: 2, overflow: 'hidden' }}
 			/>
 			{lngLat && (
 				<Typography sx={{ mt: 2 }}>
@@ -51,7 +57,7 @@ const MapPicker = () => {
 				sx={{ mt: 2 }}
 				variant="contained"
 				onClick={() => {
-					if (lngLat) alert(`Coordinates saved: ${lngLat.lat}, ${lngLat.lng}`);
+					if (lngLat) setLatLng(lngLat);
 				}}
 			>
 				Save Coordinates
@@ -59,5 +65,3 @@ const MapPicker = () => {
 		</Box>
 	);
 };
-
-export default MapPicker;

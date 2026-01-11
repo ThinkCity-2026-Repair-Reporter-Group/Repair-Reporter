@@ -8,6 +8,23 @@ import {
 import { createReport, uploadImage, type Report } from "../services/api";
 import PageLayout from "../components/PageLayout";
 import { useState, useEffect } from "react";
+import { styled } from '@mui/material/styles';
+import Dialog from '@mui/material/Dialog';
+// import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+// import DialogActions from '@mui/material/DialogActions';
+import IconButton from '@mui/material/IconButton';
+import CloseIcon from '@mui/icons-material/Close';
+import MapPicker from "../components/MapPicker";
+
+const BootstrapDialog = styled(Dialog)(({ theme }) => ({
+	'& .MuiDialogContent-root': {
+		padding: theme.spacing(2),
+	},
+	'& .MuiDialogActions-root': {
+		padding: theme.spacing(1),
+	},
+}));
 
 export default function Report() {
 
@@ -19,14 +36,14 @@ export default function Report() {
 	const [imageFile, setImageFile] = useState<File | null>(null);
 
 
-	// const [dialogIsOpen, setDialogIsOpen] = useState(false);
+	const [dialogIsOpen, setDialogIsOpen] = useState(false);
 
-	// const handleOpenDialog = () => {
-	// 	setDialogIsOpen(true);
-	// };
-	// const handleCloseDialog = () => {
-	// 	setDialogIsOpen(false);
-	// };
+	const handleOpenDialog = () => {
+		setDialogIsOpen(true);
+	};
+	const handleCloseDialog = () => {
+		setDialogIsOpen(false);
+	};
 
 	// Inside a submit handler
 	async function handleSubmit(file: File, type: string, description: string, lat: number, lng: number) {
@@ -39,7 +56,7 @@ export default function Report() {
 				lat,
 				lng,
 				imageUrl,
-				createdAt: new Date()
+				createdAt: new Date().toISOString()
 			};
 
 			const id = await createReport(newReport);
@@ -47,6 +64,14 @@ export default function Report() {
 		} catch (err) {
 			console.error("Error submitting report:", err);
 		}
+	}
+
+	function handleSetLatLng(latLng: { lat: number; lng: number } | null) {
+		if (latLng) {
+			setLatitude(latLng.lat);
+			setLongitude(latLng.lng);
+		}
+		handleCloseDialog();
 	}
 
 	function handleClickSubmit() {
@@ -72,11 +97,15 @@ export default function Report() {
 
 	useEffect(() => {
 		// Reset error text when inputs change
+		setErrorText("");
+	}, [issueType, description, latitude, longitude, imageFile]);
+
+	useEffect(() => {
 
 		setLatitude(0);
 		setLongitude(0);
 		setImageFile(null);
-	});
+	}, [])
 
 	return (
 		<PageLayout>
@@ -114,10 +143,15 @@ export default function Report() {
 					component="label"
 					fullWidth
 					sx={{ mt: 2 }}
-				// onClick={() => handleOpenDialog()}
+					onClick={() => handleOpenDialog()}
 				>
 					Choose Location
 				</Button>
+				<Typography sx={{ mt: 1 }}>
+					{latitude !== 0 && longitude !== 0
+						? `Selected location: (${latitude.toFixed(4)}, ${longitude.toFixed(4)})`
+						: "No location selected."}
+				</Typography>
 
 				<Button
 					variant="outlined"
@@ -128,6 +162,12 @@ export default function Report() {
 					Upload Photo
 					<input type="file" hidden />
 				</Button>
+
+				<Typography sx={{ mt: 1 }}>
+					{imageFile && imageFile.name
+						? `Selected image: ${imageFile.name}`
+						: "No image selected."}
+				</Typography>
 
 				<Button
 					variant="contained"
@@ -146,6 +186,32 @@ export default function Report() {
 					))}
 				</Typography>
 			</Box>
+			{/* https://mui.com/material-ui/react-dialog/ */}
+			<BootstrapDialog
+				onClose={handleCloseDialog}
+				aria-labelledby="customized-dialog-title"
+				open={dialogIsOpen}
+				fullWidth
+				// sx={{ width: '75vw', maxWidth: '1600px' }}
+				maxWidth="lg"
+			>
+				<IconButton
+					aria-label="close"
+					onClick={handleCloseDialog}
+					sx={(theme) => ({
+						position: 'absolute',
+						right: 8,
+						top: 8,
+						color: theme.palette.grey[500],
+						zIndex: 999,
+					})}
+				>
+					<CloseIcon />
+				</IconButton>
+				<DialogContent sx={{ mt: '0px', width: '100%' }}>
+					<MapPicker setLatLng={handleSetLatLng} />
+				</DialogContent>
+			</BootstrapDialog>
 		</PageLayout >
 	);
 }
